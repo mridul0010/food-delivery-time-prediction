@@ -6,3 +6,12 @@ stages:
       - src/dataset.py
     outs:
       - data/processed/cleaned Delivery Dataset.csv
+
+  data_preparation:
+    cmd: python src/data_preparation.py
+    deps:
+      - data/processed/cleaned Delivery Dataset.csv
+      - src/data_preparation.py
+    outs:
+      - data/interim/train.csv
+      - data/interim/test.csv
