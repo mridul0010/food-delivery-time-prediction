@@ -1,3 +1,21 @@
 Data_Preparation:
   test_size: 0.2
   random_state: 42
+
+Train:
+  best_xgb_params:
+    n_estimators : 245
+    max_depth: 23
+    learning_rate: 0.19864909172366368
+    subsample: 0.9180765181845632
+    min_child_weight: 7
+    gamma: 1.0407049003047555
+    reg_lambda: 22.40266224283313
+
+  best_rf_params:
+    n_estimators: 299
+    max_depth: 13
+    min_samples_split: 20
+    min_samples_leaf: 2
+    max_features: 0.44603640869435546
+    bootstrap: False
