@@ -21,6 +21,53 @@ MODELS_DIR = PROJ_ROOT / "models"
 REPORTS_DIR = PROJ_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 
+
+# Features file constants
+TARGET_COLUMN = "Time_taken (min)"
+FEATURES_OUTPUT_PATH = PROCESSED_DATA_DIR / "features.csv"
+LABELS_OUTPUT_PATH = PROCESSED_DATA_DIR / "labels.csv"
+
+NUMERICAL_COLUMNS = [
+    "Delivery_person_Age",
+    "Delivery_person_Ratings",
+    "Restaurant_latitude",
+    "Restaurant_longitude",
+    "Delivery_location_latitude",
+    "Delivery_location_longitude",
+    "multiple_deliveries",
+    "distance_km",
+    "Prep_Time(min)",
+    "Order_hour",
+    "isWeekend",
+]
+
+ONE_HOT_COLUMNS = [
+    "City",
+    "Zone",
+    "Weather_conditions",
+    "Type_of_order",
+    "Type_of_vehicle",
+    "City_Type",
+    "Order_day",
+    "Time_Of_Day",
+]
+
+ORDINAL_COLUMNS = [
+    "Road_traffic_density",
+    "Vehicle_condition",
+    "Festival",
+    "delivery_rating_group",
+    "age_group",
+    "distance_group",
+]
+
+ROAD_TRAFFIC_DENSITY = ["Low", "Medium", "High", "Jam"]
+VEHICLE_CONDITION = ["poor", "Average", "Good", "Excellent"]
+FESTIVAL = ["No", "Yes"]
+DELIVERY_RATING_GROUP = ["Low", "Medium", "High"]
+AGE_GROUP = ["Young", "Adult", "Senior"]
+DISTANCE_GROUP = ["Short Distance", "Medium Distance", "Long Distance"]
+
 # If tqdm is installed, configure loguru with tqdm.write
 # https://github.com/Delgan/loguru/issues/135
 try:
