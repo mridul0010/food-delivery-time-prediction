@@ -15,3 +15,16 @@ stages:
     outs:
       - data/interim/train.csv
       - data/interim/test.csv
+  
+  feature_engineering:
+    cmd : python src/features.py
+    deps:
+      - data/interim/train.csv
+      - data/interim/test.csv
+      - src/features.py
+    outs:
+      - data/processed/train_features/train_labels.csv
+      - data/processed/test_features/test_labels.csv
+      - data/processed/train_features/train_trans.csv
+      - data/processed/test_features/test_trans.csv
+      - models/preprocessor.joblib

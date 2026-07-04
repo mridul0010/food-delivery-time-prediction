@@ -24,8 +24,8 @@ FIGURES_DIR = REPORTS_DIR / "figures"
 
 # Features file constants
 TARGET_COLUMN = "Time_taken (min)"
-FEATURES_OUTPUT_PATH = PROCESSED_DATA_DIR / "features.csv"
-LABELS_OUTPUT_PATH = PROCESSED_DATA_DIR / "labels.csv"
+TRAIN_OUTPUT_PATH = PROCESSED_DATA_DIR / "train_features"
+TEST_OUTPUT_PATH = PROCESSED_DATA_DIR / "test_features"
 
 NUMERICAL_COLUMNS = [
     "Delivery_person_Age",
