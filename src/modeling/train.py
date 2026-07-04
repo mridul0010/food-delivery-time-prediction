@@ -115,11 +115,11 @@ def main(
         model.fit(X_train, y_train)
 
         model_path.parent.mkdir(parents=True, exist_ok=True)
-        logger.info("Saving trained model pipeline artifact to {}", model_path)
+        logger.info("Saving trained model artifact to {}", model_path)
         joblib.dump(model, model_path)
 
-        logger.success("Training step finalized! Model artifact successfully saved.")
-        
+        logger.success("Training run completed successfully! Model pipeline artifact generated.")
+
     except FileNotFoundError as exc:
         logger.exception("Training input missing: {}", exc)
         raise typer.Exit(code=1)
@@ -127,7 +127,7 @@ def main(
         logger.exception("Training pipeline execution failed: {}", exc)
         raise typer.Exit(code=1)
     except Exception:
-        logger.exception("Unexpected error encountered while training the model")
+        logger.exception("Unexpected error occurred while training the model")
         raise typer.Exit(code=1)
 
 
