@@ -3,7 +3,7 @@ Data_Preparation:
   random_state: 42
 
 Train:
-  best_xgb_params:
+  XGB_BOOST:
     n_estimators : 245
     max_depth: 23
     learning_rate: 0.19864909172366368
@@ -12,7 +12,7 @@ Train:
     gamma: 1.0407049003047555
     reg_lambda: 22.40266224283313
 
-  best_rf_params:
+  RandomForest:
     n_estimators: 299
     max_depth: 13
     min_samples_split: 20

@@ -35,5 +35,8 @@ stages:
       - data/processed/train_features/train_trans.csv
       - data/processed/train_features/train_labels.csv
       - src/modeling/train.py
+    params:
+      - Train.RandomForest
+      - Train.XGB_BOOST
     outs:
       - models/model.joblib
