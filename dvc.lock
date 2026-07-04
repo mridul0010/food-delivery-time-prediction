@@ -1,0 +1,18 @@
+schema: '2.0'
+stages:
+  dataset:
+    cmd: python src/dataset.py
+    deps:
+    - path: data/raw/Delivery Dataset.csv
+      hash: md5
+      md5: 5911da30b4026708a4786e3ab0a7b4da
+      size: 5440444
+    - path: src/dataset.py
+      hash: md5
+      md5: 73bc516e97b39143f004391787e1ed6e
+      size: 10015
+    outs:
+    - path: data/processed/cleaned Delivery Dataset.csv
+      hash: md5
+      md5: 5cd48934aaa7d7aa21e77f3396209194
+      size: 3400639
