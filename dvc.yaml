@@ -34,8 +34,6 @@ stages:
     deps:
       - data/processed/train_features/train_trans.csv
       - data/processed/train_features/train_labels.csv
-      - data/processed/test_features/test_trans.csv
-      - data/processed/test_features/test_labels.csv
       - src/modeling/train.py
     outs:
       - models/model.joblib

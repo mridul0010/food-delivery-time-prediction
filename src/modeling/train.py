@@ -8,14 +8,12 @@ import yaml
 from loguru import logger
 from sklearn.ensemble import RandomForestRegressor, StackingRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PowerTransformer
 from sklearn.compose import TransformedTargetRegressor
 from xgboost import XGBRegressor
 
-# Assuming TRAIN_OUTPUT_PATH and TEST_OUTPUT_PATH are available in config
-from src.config import MODELS_DIR, TRAIN_OUTPUT_PATH, TEST_OUTPUT_PATH, PROJ_ROOT, TARGET_COLUMN
+from src.config import MODELS_DIR, TRAIN_OUTPUT_PATH, PROJ_ROOT, TARGET_COLUMN
 
 app = typer.Typer()
 
@@ -100,8 +98,6 @@ def _build_model(train_params: dict[str, Any]) -> Pipeline:
 def main(
     train_features_path: Path = TRAIN_OUTPUT_PATH / "train_trans.csv",
     train_labels_path: Path = TRAIN_OUTPUT_PATH / "train_labels.csv",
-    test_features_path: Path = TEST_OUTPUT_PATH / "test_trans.csv",
-    test_labels_path: Path = TEST_OUTPUT_PATH / "test_labels.csv",
     model_path: Path = MODELS_DIR / "model.joblib",
     params_path: Path = PROJ_ROOT / "params.yaml",
 ):
@@ -109,46 +105,29 @@ def main(
         logger.info("Loading preprocessed training data...")
         X_train, y_train = _load_training_frame(train_features_path, train_labels_path)
         
-        logger.info("Loading preprocessed test data...")
-        X_test, y_test = _load_training_frame(test_features_path, test_labels_path)
-
         logger.info("Loading training parameters from {}", params_path)
         params = _load_params(params_path)
         train_params = params["Train"]
 
         model = _build_model(train_params)
 
-        logger.info("Fitting the final stacking regressor model...")
+        logger.info("Fitting the final stacking regressor model pipeline...")
         model.fit(X_train, y_train)
 
-        logger.info("Evaluating model performance...")
-        train_predictions = model.predict(X_train)
-        test_predictions = model.predict(X_test)
-
-        train_mae = mean_absolute_error(y_train, train_predictions)
-        test_mae = mean_absolute_error(y_test, test_predictions)
-        train_r2 = r2_score(y_train, train_predictions)
-        test_r2 = r2_score(y_test, test_predictions)
-
         model_path.parent.mkdir(parents=True, exist_ok=True)
-        logger.info("Saving trained model artifact to {}", model_path)
+        logger.info("Saving trained model pipeline artifact to {}", model_path)
         joblib.dump(model, model_path)
 
-        logger.success(
-            "Training complete. Train MAE: {:.4f}, Test MAE: {:.4f}, Train R2: {:.4f}, Test R2: {:.4f}",
-            train_mae,
-            test_mae,
-            train_r2,
-            test_r2,
-        )
+        logger.success("Training step finalized! Model artifact successfully saved.")
+        
     except FileNotFoundError as exc:
         logger.exception("Training input missing: {}", exc)
         raise typer.Exit(code=1)
     except (pd.errors.ParserError, ValueError, KeyError, OSError) as exc:
-        logger.exception("Training pipeline failed: {}", exc)
+        logger.exception("Training pipeline execution failed: {}", exc)
         raise typer.Exit(code=1)
     except Exception:
-        logger.exception("Unexpected error while training the model")
+        logger.exception("Unexpected error encountered while training the model")
         raise typer.Exit(code=1)
 
 
