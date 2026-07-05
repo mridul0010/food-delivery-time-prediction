@@ -3,7 +3,7 @@ Data_Preparation:
   random_state: 42
 
 Train:
-  XGB_BOOST:
+  XGBOOST:
     n_estimators : 245
     max_depth: 23
     learning_rate: 0.19864909172366368

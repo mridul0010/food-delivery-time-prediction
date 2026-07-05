@@ -85,10 +85,55 @@ stages:
       size: 7691710
     - path: src/modeling/train.py
       hash: md5
-      md5: 30e4a607f1194954600eef249247e6bc
-      size: 4720
+      md5: e778b3a456a6e1ffccf203ebdea4043b
+      size: 4688
+    params:
+      params.yaml:
+        Train.RandomForest:
+          n_estimators: 299
+          max_depth: 13
+          min_samples_split: 20
+          min_samples_leaf: 2
+          max_features: 0.44603640869435546
+          bootstrap: false
+        Train.XGB_BOOST:
+          n_estimators: 245
+          max_depth: 23
+          learning_rate: 0.19864909172366368
+          subsample: 0.9180765181845632
+          min_child_weight: 7
+          gamma: 1.0407049003047555
+          reg_lambda: 22.40266224283313
     outs:
     - path: models/model.joblib
       hash: md5
       md5: 398d49c8f3152c867f3243cf24da7a1a
       size: 37859817
+  prediction:
+    cmd: python src/modeling/predict.py
+    deps:
+    - path: data/processed/test_features/test_labels.csv
+      hash: md5
+      md5: e7171e1d31cd08f349e4db47eac9d7fc
+      size: 14782
+    - path: data/processed/test_features/test_trans.csv
+      hash: md5
+      md5: 36567cd6772e18b3da97da6f81d56560
+      size: 1923924
+    - path: models/model.joblib
+      hash: md5
+      md5: 398d49c8f3152c867f3243cf24da7a1a
+      size: 37859817
+    - path: src/modeling/predict.py
+      hash: md5
+      md5: fc1e1e6dece578393f0cad19d6e7f1e6
+      size: 11189
+    outs:
+    - path: data/external/evaluation_metrics.json
+      hash: md5
+      md5: 561a119935978d507584ba3dddd53b15
+      size: 203
+    - path: data/external/test_predictions.csv
+      hash: md5
+      md5: c92da6351aaa95fbf949f6457432d550
+      size: 153525

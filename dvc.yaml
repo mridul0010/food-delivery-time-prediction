@@ -37,6 +37,17 @@ stages:
       - src/modeling/train.py
     params:
       - Train.RandomForest
-      - Train.XGB_BOOST
+      - Train.XGBOOST
     outs:
       - models/model.joblib
+
+  prediction:
+    cmd : python src/modeling/predict.py
+    deps:
+      - src/modeling/predict.py
+      - data/processed/test_features/test_trans.csv
+      - data/processed/test_features/test_labels.csv
+      - models/model.joblib
+    outs:
+      - data/external/test_predictions.csv
+      - data/external/evaluation_metrics.json

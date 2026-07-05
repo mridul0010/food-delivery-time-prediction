@@ -56,13 +56,13 @@ def _load_training_frame(features_path: Path, labels_path: Path) -> tuple[pd.Dat
 
 
 def _build_model(train_params: dict[str, Any]) -> Pipeline:
-    rf_params = dict(train_params.get("best_rf_params", {}))
-    xgb_params = dict(train_params.get("best_xgb_params", {}))
+    rf_params = dict(train_params.get("RandomForest", {}))
+    xgb_params = dict(train_params.get("XGBOOST", {}))
 
     if not rf_params:
-        raise ValueError("Missing 'best_rf_params' under Train in params.yaml")
+        raise ValueError("Missing 'RandomForest' section in params.yaml")
     if not xgb_params:
-        raise ValueError("Missing 'best_xgb_params' under Train in params.yaml")
+        raise ValueError("Missing 'XGBOOST' section in params.yaml")
 
     rf_params.setdefault("random_state", 42)
     rf_params.setdefault("n_jobs", -1)
