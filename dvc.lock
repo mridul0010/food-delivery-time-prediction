@@ -85,8 +85,8 @@ stages:
       size: 7691710
     - path: src/modeling/train.py
       hash: md5
-      md5: e778b3a456a6e1ffccf203ebdea4043b
-      size: 4688
+      md5: f7e9423fa08538587ac4e53662e1c864
+      size: 4684
     params:
       params.yaml:
         Train.RandomForest:
@@ -96,7 +96,7 @@ stages:
           min_samples_leaf: 2
           max_features: 0.44603640869435546
           bootstrap: false
-        Train.XGB_BOOST:
+        Train.XGBOOST:
           n_estimators: 245
           max_depth: 23
           learning_rate: 0.19864909172366368
