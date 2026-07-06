@@ -85,8 +85,8 @@ stages:
       size: 7691710
     - path: src/modeling/train.py
       hash: md5
-      md5: f7e9423fa08538587ac4e53662e1c864
-      size: 4684
+      md5: b88e87c7b441c9715929491f929e8f8a
+      size: 5143
     params:
       params.yaml:
         Train.RandomForest:
@@ -126,8 +126,8 @@ stages:
       size: 37859817
     - path: src/modeling/predict.py
       hash: md5
-      md5: fc1e1e6dece578393f0cad19d6e7f1e6
-      size: 11189
+      md5: 0b8c3b7c1149cba4e6976aabb9bae15d
+      size: 11450
     outs:
     - path: data/external/evaluation_metrics.json
       hash: md5
@@ -135,5 +135,20 @@ stages:
       size: 203
     - path: data/external/test_predictions.csv
       hash: md5
-      md5: c92da6351aaa95fbf949f6457432d550
-      size: 153525
+      md5: 11dc1ad043b6258b5ec4d2b5fe632296
+      size: 153528
+    - path: run_information.json
+      hash: md5
+      md5: 23dabca5d6b388dd243bc9addc6e68c0
+      size: 276
+  register_model:
+    cmd: python src/modeling/register_model.py
+    deps:
+    - path: run_information.json
+      hash: md5
+      md5: 23dabca5d6b388dd243bc9addc6e68c0
+      size: 276
+    - path: src/modeling/register_model.py
+      hash: md5
+      md5: 5ba4d776c1d4b07891b16248c91425a6
+      size: 7564

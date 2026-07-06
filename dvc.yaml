@@ -51,3 +51,10 @@ stages:
     outs:
       - data/external/test_predictions.csv
       - data/external/evaluation_metrics.json
+      - run_information.json
+  
+  register_model:
+    cmd : python src/modeling/register_model.py
+    deps:
+      - src/modeling/register_model.py
+      - run_information.json

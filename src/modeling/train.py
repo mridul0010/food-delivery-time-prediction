@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 from typing import Any
 
 import joblib
@@ -94,6 +95,19 @@ def _build_model(train_params: dict[str, Any]) -> Pipeline:
     )
 
 
+def _wait_for_file_ready(file_path: Path, timeout_seconds: int = 30, poll_interval_seconds: int = 1) -> None:
+    deadline = time.monotonic() + timeout_seconds
+
+    while True:
+        try:
+            with file_path.open("rb"):
+                return
+        except OSError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(poll_interval_seconds)
+
+
 @app.command()
 def main(
     train_features_path: Path = TRAIN_OUTPUT_PATH / "train_trans.csv",
@@ -117,6 +131,7 @@ def main(
         model_path.parent.mkdir(parents=True, exist_ok=True)
         logger.info("Saving trained model artifact to {}", model_path)
         joblib.dump(model, model_path)
+        _wait_for_file_ready(model_path)
 
         logger.success("Training run completed successfully! Model pipeline artifact generated.")
 

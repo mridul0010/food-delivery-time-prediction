@@ -1,8 +1,13 @@
-from pathlib import Path
+from dotenv import load_dotenv  
 import os
-from typing import Any
+from pathlib import Path
+
+
+load_dotenv()
+
 import json
-from dotenv import load_dotenv
+from typing import Any
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -11,9 +16,7 @@ import typer
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import cross_val_score
 
-from src.config import MODELS_DIR, TARGET_COLUMN, TEST_OUTPUT_PATH , EXTERNAL_DATA_DIR , TRAIN_OUTPUT_PATH, PROJ_ROOT
-
-load_dotenv()
+from src.config import MODELS_DIR, TARGET_COLUMN, TEST_OUTPUT_PATH, TRAIN_OUTPUT_PATH, PROJ_ROOT
 
 app = typer.Typer()
 
@@ -39,7 +42,6 @@ def _resolve_tracking_uri() -> str | None:
 
 
 def _configure_mlflow() -> bool:
-    # 1. Grab tokens out of your secure environment context
     repo_owner = os.getenv("DAGSHUB_REPO_OWNER")
     repo_name = os.getenv("DAGSHUB_REPO_NAME")
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
@@ -49,11 +51,9 @@ def _configure_mlflow() -> bool:
         print("MLflow/DagsHub environment variables are missing from your .env file!")
         return False
 
-    # 2. Ingress your access tokens directly into OS variables so MLflow can read them
     os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_USERNAME", repo_owner)
     os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TOKEN", "")
 
-    # 3. Initialize tracking smoothly using your own endpoint parameters
     import dagshub
     dagshub.init(repo_owner=repo_owner, repo_name=repo_name, mlflow=True)
     
@@ -80,7 +80,6 @@ def _load_dataset_splits(
     if len(features_df) != len(labels_df):
         raise ValueError("Feature and label row counts do not match.")
 
-    # Reconstruct whole dataframe wrapper strictly for MLflow dataset lineage mapping
     full_df = features_df.copy()
     full_df[TARGET_COLUMN] = labels_df[TARGET_COLUMN].values
 
@@ -117,11 +116,17 @@ def _compute_cross_val_score(
     return mean_mae, individual_maes
 
 
-def _save_run_information(save_json_path: Path, run_id: str, artifact_path: str, model_name: str):
+def _save_run_information(
+    save_json_path: Path,
+    run_id: str,
+    artifact_path: str,
+    model_name: str,
+):
     info_dict = {
         "run_id": run_id,
         "artifact_path": artifact_path,
-        "model_name": model_name
+        "model_name": model_name,
+        "model_artifact_path": model_name,
     }
     with open(save_json_path, "w", encoding="utf-8") as f:
         json.dump(info_dict, f, indent=4)
@@ -135,8 +140,9 @@ def main(
     train_features_path: Path = TRAIN_OUTPUT_PATH / "train_trans.csv",
     train_labels_path: Path = TRAIN_OUTPUT_PATH / "train_labels.csv",
     model_path: Path = MODELS_DIR / "model.joblib",
-    predictions_path: Path = EXTERNAL_DATA_DIR / "test_predictions.csv",
-    metrics_path: Path = EXTERNAL_DATA_DIR / "evaluation_metrics.json",
+    # Fixed explicitly to match the external path requirements expected by the stage tracker
+    predictions_path: Path = PROJ_ROOT / "data" / "external" / "test_predictions.csv",
+    metrics_path: Path = PROJ_ROOT / "data" / "external" / "evaluation_metrics.json",
     run_info_path: Path = PROJ_ROOT / "run_information.json",
 ):
     try:
@@ -155,7 +161,6 @@ def main(
         y_train_pred = np.asarray(model.predict(X_train))
         y_test_pred = np.asarray(model.predict(X_test))
 
-        # Core evaluation performance extraction
         train_mae = float(mean_absolute_error(y_train, y_train_pred))
         test_mae = float(mean_absolute_error(y_test, y_test_pred))
         train_r2 = float(r2_score(y_train, y_train_pred))
@@ -165,7 +170,7 @@ def main(
 
         mean_cv_mae, cv_folds = _compute_cross_val_score(model, X_train, y_train)
 
-        # Build clean structural dictionary payload for local file logging
+        # Unified metric log payload: includes mean cross-validation score securely
         metrics = {
             "train_mae": train_mae,
             "test_mae": test_mae,
@@ -202,7 +207,21 @@ def main(
                 mlflow.log_param("test_features_path", str(test_features_path))
                 mlflow.log_param("test_labels_path", str(test_labels_path))
                 
-                # Log baseline regression evaluation metrics
+                # Extract and log hyperparameter structures out of the internal StackingRegressor
+                if hasattr(model, "regressor_"):
+                    all_params = model.regressor_.get_params()
+                elif hasattr(model, "regressor") and model.regressor is not None:
+                    all_params = model.regressor.get_params()
+                else:
+                    all_params = model.get_params()
+
+                # Clean the parameters dictionary to verify primitives are passed to MLflow
+                filtered_params = {
+                    k: str(v) if isinstance(v, (list, tuple, dict, object)) and v is not None else v
+                    for k, v in all_params.items()
+                }
+                mlflow.log_params(filtered_params)
+
                 mlflow.log_metric("train_mae", train_mae)
                 mlflow.log_metric("test_mae", test_mae)
                 mlflow.log_metric("train_r2", train_r2)
@@ -211,31 +230,28 @@ def main(
                 mlflow.log_metric("prediction_bias", bias)
                 mlflow.log_metric("mean_cv_score", mean_cv_mae)
 
-                # Log individual folds exclusively to MLflow server registry UI
                 for i, fold_score in enumerate(cv_folds):
                     mlflow.log_metric(f"CV {i}", fold_score)
                     
-                # Track rich data lineage contexts inside MLflow
                 train_data_input = mlflow.data.from_pandas(train_full_df, targets=TARGET_COLUMN)
                 test_data_input = mlflow.data.from_pandas(test_full_df, targets=TARGET_COLUMN)
                 mlflow.log_input(dataset=train_data_input, context="training")
                 mlflow.log_input(dataset=test_data_input, context="validation")
 
-                # Infer deterministic signatures using a standard data patch sample
                 sample_input = X_train.sample(20, random_state=42)
                 sample_output = np.asarray(model.predict(sample_input))
                 model_signature = mlflow.models.infer_signature(model_input=sample_input, model_output=sample_output)
 
-                # Log the unified, end-to-end processing & model wrapper artifact
                 trusted_types = [
                     "sklearn.utils._bunch.Bunch",
                     "xgboost.core.Booster",
                     "xgboost.sklearn.XGBRegressor",
                 ]
 
+                # Fixed parameter mapping from name= to artifact_path= to resolve registration lookups
                 mlflow.sklearn.log_model(
                     sk_model=model, 
-                    name=model_name, 
+                    artifact_path=model_name, 
                     signature=model_signature,
                     skops_trusted_types=trusted_types
                 )
@@ -246,7 +262,6 @@ def main(
                 artifact_uri = mlflow.get_artifact_uri()
                 run_id = run.info.run_id
                 
-            # Persist tracking parameters cleanly post-run execution context lifecycle closure
             _save_run_information(
                 save_json_path=run_info_path,
                 run_id=run_id,
