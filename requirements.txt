@@ -1,4 +1,5 @@
 awscli
+fastapi
 loguru
 mkdocs
 pip
@@ -6,4 +7,5 @@ python-dotenv
 ruff
 tqdm
 typer
+uvicorn
 -e .
